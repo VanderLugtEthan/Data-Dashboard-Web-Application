@@ -1,0 +1,43 @@
+<script>
+	//const bodyParser = require('body-parser');
+	function CallAPI() {
+		if ('{{{ APIURL }}}' > ' ') {
+			const req24 = new XMLHttpRequest()
+			req24.addEventListener("load", reqListenerAPI);
+			req24.open("{{{APIVerb}}}", '{{{ APIURL }}}');
+			if ('{{{ UID }}}' > ' ' & '{{{ PW }}}' >  ' ') {
+				req24.setRequestHeader("Authorization", "Basic " + btoa("{{{UID}}}:{{{PW}}}"));
+			} else {
+				req24.setRequestHeader("Authorization", "Basic " + btoa("veals:Retiresoon04"));
+			}
+			req24.send();
+			
+			function reqListenerAPI () {
+				//const result = this.responseText;
+				document.getElementById('APIResult').innerHTML = this.responseText;
+			}
+		} else {
+			document.getElementById('APIResult').innerHTML = 'No APIURL sent';
+		}
+	}
+
+</script>
+<form ID="APITesterForm" method="get" onload="CallAPI()">
+	Verb:<select name="APIVerb" required>
+			<option name="get">GET</option>
+			<option name="put">PUT</option>
+			<option name="post">POST</option>
+		</select>
+	URL:<input name="APIURL" required size="160">
+	<br>
+	Authentication: User:<input name="user[UID]">	PW:<input name="user[PW]">
+	<input type="submit" value="Submit">
+</form>
+<p></p>
+<DIV ID="API"><b>API: </b>{{{ APIURL }}}</DIV>
+<Div><b>API Results:</b></Div>
+<DIV ID="APIResult">Not Available Yet</DIV>
+<script>
+	window.onload = CallAPI();
+</script>
+

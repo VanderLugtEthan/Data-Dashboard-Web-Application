@@ -1,0 +1,341 @@
+<script src="/chartist/chartist.js"></script>
+<script src="/scripts/gridjs.umd.js"></script>
+<script src="/chartist/chartist-plugin-axistitle.js"></script>
+
+<div  class="dashboard" style="width: 100%; height:99%;display: inline-block;">
+	<div class="dashboardRow" style="width: 100%; height: 50%; display: inline-block; background-color: rgb(255, 255, 255);">
+		{{!-- First Shift Testing --}}
+		<div class="dashboardChart" style="width: 32%; height:100%; display: inline-block; position: relative; background-color: rgb(255, 255, 255);">
+			<br>
+			<div align='center'   class="ChartTitle">{{ ParmLocation }} Manifold Production Today</div>
+			<div id="MToday"      class="ct-chart" style="width: 99%; height: 85%; ">Waiting</div>
+			<div id="MTodayGraph" class="ct-chart" style="width: 99%; height: 10%;  position: absolute; bottom: 0; left: 0;">Waiting</div>
+		</div>
+		<div class="dashboardChart" style="width: 32%; height:100%; display: inline-block; position: relative; background-color: rgb(255, 255, 255); ">
+			<br>
+			<div align='center' class="ChartTitle">{{ ParmLocation }} Manifold Production Previous Week</div>
+			<div id="MLastWeek" class="ct-chart" style="width: 99%; height: 85%;">Waiting</div>
+			<div id="MWeekGraph" class="ct-chart" style="width: 99%; height: 10%;  position: absolute; bottom: 0; left: 0;">Waiting</div>
+		</div>
+		<div class="dashboardChart" style="width: 32%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<br>
+			<div align='center' class="ChartTitle">{{ ParmLocation }} Manifold Scrap Previous Weeks</div>
+			<div id="MScrap" class="ct-chart" style="width: 99%; height: 40%;">Waiting</div>
+			<div id="chartScrapAmt" class="ct-chart" style="width: 99%; height: 50%; "></div>
+		</div>
+	</div>
+	<div class="dashboardRow" style="width:100%; height: 46%; background-color: rgb(255, 255, 255); ">
+		<div class="dashboardChart" style="width: 98%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<br/>
+			<div align='center' class="ChartTitle">Production Schedule</div>
+			<div align='left'>
+				<div id="JobSchedule" class="ct-chart ct-bar" style="width: 100%; height: 100%; stroke:green;">Waiting</div>
+			</div>
+		</div>
+	</div>
+</div>
+<style>
+ .ct-bar {
+    /* The width of your bars */
+    stroke-width: 40px;
+  } 
+  .ct-series-a .ct-point, .ct-series-a .ct-line, .ct-series-a .ct-bar, .ct-series-a .ct-slice-donut {
+  stroke: red; }
+
+</style>
+<script>
+		document.title = 'Manifold Machining';
+
+{
+
+	var optionsBar = {
+		type: 'bar',
+		fullWidth: true,
+		fullHeight: true,
+		chartPadding: {
+			top: 0,
+			right: 0,
+			bottom: 0,
+			left: 10
+		},
+		barWidth: 70,
+		scales: {
+			x: {
+				ticks: {
+					font: {
+						size: 38
+					}
+				}
+        	}
+    	},
+	    axisY: {
+	      onlyInteger: true,
+	    },
+		plugins: [
+			Chartist.plugins.ctAxisTitle({
+				axisY: {
+					axisTitle: "Amount",
+					axisClass: "ct-axis-title",
+					textAnchor: 'middle',
+					flipTitle: false
+				}
+			})
+		]
+	};
+
+	const ParmLocation = '{{{ParmLocation}}}';
+	}
+
+	// Create charts with data and options (some data passed from app.js)
+	//=============================== Populate producedCount Today =============================
+	{
+		//initial data get 
+		GetTodayData();
+		//window.setInterval(GetTodayData, 600000); // How often to get data 
+
+		function GetTodayData() {
+			const req24 = new XMLHttpRequest();
+			req24.addEventListener("load", reqListenerToday);
+			req24.open("GET", '../../api/MachinedToday/{{{ParmLocation}}}/Manifold');
+			req24.send();
+			
+			function reqListenerToday () {
+				const result = JSON.parse(this.responseText); 
+				//console.log("api result:" + result);
+				const labels = [];
+				let series = [];
+				let goalCount = 0.0;
+				let producedCount = 0;
+				result.forEach(function(row){
+						//below commented for simpler version
+
+								series.push(
+								[Object.values(Object.values(row))[0],
+								Object.values(Object.values(row))[1],
+								parseFloat(Object.values(Object.values(row))[2]).toFixed(0),
+								parseFloat(Object.values(Object.values(row))[3]).toFixed(0)
+								]);
+								goalCount += Object.values(Object.values(row))[2];
+								producedCount += Object.values(Object.values(row))[1];
+
+				});
+				document.getElementById("MToday").innerHTML = '';
+				const grid = new gridjs.Grid({
+					columns: ['Machine', 'Produced',  'Goal',  'Utilized' ],
+					data: series,
+					style: {
+						td: {
+						'font-size': '30px',
+						'text-align': 'center'
+						}
+					}
+				}).render(document.getElementById("MToday"));
+				// Add a small bargraph in width of chart area
+				let elwidth = document.getElementById("MTodayGraph").getBoundingClientRect().width;
+				let ih = "";
+				ih += "<div style='display: flex; justify-content: flex-start'><Table><TR>";
+				goalCount = parseFloat(goalCount.toFixed(2));
+				let ProducedLen = 0;
+				let RemainingLen = 0;
+				if (producedCount > goalCount) {
+					ProducedLen = elwidth * .98 ;
+					RemainingLen = 0;
+					goalCount = producedCount;
+				}  else {
+					ProducedLen = (producedCount / goalCount) * elwidth ;
+					RemainingLen = parseFloat(elwidth - ProducedLen).toFixed(0)  ;
+				}
+				ih += `<TD style="background-color:#33FF33; font-size: 24px;height: 50px; padding: 0; min-width: ${ProducedLen}px; text-align:center">${producedCount}</TD>`;
+				ih += `<TD style="background-color:#3333FF; font-size: 24px;height: 50px; color:white; width: ${RemainingLen}px; text-align:center">${parseFloat(goalCount - producedCount).toFixed(0)}</TD>`; 
+				ih += "</tr></table></div>";
+				document.getElementById("MTodayGraph").innerHTML = ih;
+			}
+		}
+	}
+	//=============================== Populate produced Last Week =============================
+	{
+				//initial data get 
+		//window.setInterval(GetWeekData, 600000); // How often to get data 
+
+		function GetWeekData() {
+			const req24 = new XMLHttpRequest();
+			req24.addEventListener("load", reqListenerWeek);
+			req24.open("GET", '../../api/MachinedWeek/{{{ParmLocation}}}/Manifold');
+			req24.send();
+			
+			function reqListenerWeek () {
+				//console.log("api weekdata result:" + this.responseText);
+				const result = JSON.parse(this.responseText); 
+				//console.log("api weekdata parsed result:" + result);
+				const labels = [];
+				let series = [];
+				let goalCount = 0.0;
+				let producedCount = 0;
+				result.forEach(function(row){
+					series.push(
+					[Object.values(Object.values(row))[0],
+					Object.values(Object.values(row))[1],
+					parseFloat(Object.values(Object.values(row))[2]).toFixed(0),
+					parseFloat(Object.values(Object.values(row))[3]).toFixed(0)
+					]);
+					goalCount += Object.values(Object.values(row))[2];
+					producedCount += Object.values(Object.values(row))[1];
+				});				
+				document.getElementById("MLastWeek").innerHTML = '';
+				const grid = new gridjs.Grid({
+					columns: ['Machine', 'Produced',  'Goal',  'Utilized' ],
+					data: series,
+					style: {
+						td: {
+						'font-size': '30px',
+						'text-align': 'center'
+						}
+					}
+				}).render(document.getElementById("MLastWeek"));
+				// Add a small bargraph in width of chart area
+				let elwidth = document.getElementById("MWeekGraph").getBoundingClientRect().width ;
+				let ih = "";
+				ih += "<div style='display: flex; justify-content: flex-start'><Table><TR>";
+				goalCount = parseFloat(goalCount.toFixed(0));
+				let ProducedLen = 0;
+				let RemainingLen = 0;
+				if (producedCount > goalCount) {
+					ProducedLen = elwidth * .98;
+					RemainingLen = 0;
+					goalCount = producedCount;
+				}  else {
+					ProducedLen = (producedCount / goalCount) * elwidth ;
+					RemainingLen = parseFloat(elwidth - ProducedLen).toFixed(0)  ;
+				}
+				ih += `<TD style="background-color:#33FF33; font-size: 24px;height: 50px;  padding: 0; min-width: ${ProducedLen}px; text-align:center">${producedCount}</TD>`;
+				ih += `<TD style="background-color:#3333FF; font-size: 24px;height: 50px;  color:white; width: ${RemainingLen}px; text-align:center">${parseFloat(goalCount - producedCount).toFixed(0)}</TD>`; 
+				ih += "</tr></table></div>";
+				document.getElementById("MWeekGraph").innerHTML = ih;
+			}
+		}
+		GetWeekData();
+	}
+	// ======================= Scrap
+	{
+		function GetPlannersByDepartment() {
+			const reqPBD = new XMLHttpRequest();
+			reqPBD.addEventListener("load", reqListenerPlanners);
+			reqPBD.open("GET", '../../api/PlannersForDepartment/{{{ParmLocation}}}/Manifolds');
+			reqPBD.send();
+			
+			function reqListenerPlanners () {
+				const Planners = this.responseText; 
+				GetScrapByPlanners(Planners);
+			}
+		}
+		function GetScrapByPlanners(Planners) {
+			const reqScrap = new XMLHttpRequest();
+			reqScrap.addEventListener("load", reqListenerScrap);
+			reqScrap.open("GET", `../../api/ScrapByPlanners/{{{ParmLocation}}}/${Planners}`);
+			reqScrap.send();
+			
+			function reqListenerScrap() {
+				if (this.responseText > ' ') {
+					document.getElementById("MScrap").innerHTML = 'Failed fill';
+					const result = JSON.parse(this.responseText); 
+					const rows = Object.values(result["rows"]);
+					let series = [];
+					Object.values(rows).forEach(function(val) {
+						series.push([val[0],val[1],val[2].toFixed(0)]);
+					});
+					document.getElementById("MScrap").innerHTML = '';
+					const grid = new gridjs.Grid({
+						columns: ['Weeks Ago', 'Qty', 'Amount'],
+						data: series,
+						style: {
+							td: {
+								'font-size': '30px',
+								'text-align': 'center',
+							}
+						}
+					}).render(document.getElementById("MScrap"));
+
+					// Now populate graphs
+					//define chart
+					var chartScrapAmt = new Chartist.Bar('#chartScrapAmt',  { labels: [],  series: [] }, optionsBar);
+					const labelsGA = [];
+					let seriesGA = [];
+					result.rows.forEach(function(row){
+						labelsGA.push(Object.values(Object.values(row))[0]);
+						seriesGA.push(Object.values(Object.values(row))[2].toFixed(0));
+					});		
+					const chartdata = { labels: labelsGA,  series: [seriesGA] , };
+					chartScrapAmt.update(chartdata);
+				} else {
+					document.getElementById("MScrap").innerHTML = '<p><center>API results failed';
+				}
+
+			}
+		}
+		//initial data get 
+		GetPlannersByDepartment();
+		//window.setInterval(GetPlannersByDepartment, 60000); // How often to get data 
+
+		
+	}
+	// ============================= Populate Job Schedule Grid ==========================
+	{
+		//initial data get 
+
+		//Get data using API
+		//window.setInterval(GetJobsSched, 300000); // How often to get data 
+
+		function GetJobsSched() { 
+			const reqJ = new XMLHttpRequest()
+			reqJ.addEventListener("load", reqListenerSched);
+			reqJ.open("GET", '../../api/MachineSchedule/{{{ParmLocation}}}/Manifold');
+			reqJ.send();
+			
+			function reqListenerSched () {
+				const result = JSON.parse(this.responseText);
+				//console.log("api job result:" + JSON.stringify(result));
+				const labels = [];
+			let series = [];
+			result.forEach(function(row,i){
+				series.push([Object.values(Object.values(row))[0],
+							Object.values(Object.values(row))[1],
+							Object.values(Object.values(row))[2],
+							Object.values(Object.values(row))[3],
+							Object.values(Object.values(row))[4],
+							Object.values(Object.values(row))[5],
+							Object.values(Object.values(row))[6],
+							Object.values(Object.values(row))[7],
+							Object.values(Object.values(row))[8],
+							Object.values(Object.values(row))[9],
+							Object.values(Object.values(row))[10],
+							Object.values(Object.values(row))[11]
+							]);
+			});
+			//console.log(series[1][1]);
+			document.getElementById("JobSchedule").innerHTML = '';
+			const grid = new gridjs.Grid({
+				columns: ['Machine', 'WO', { name: 'Req Date', attributes: {'width': 90} }, 'Item', 'Status', 'Customer', 'Flash','Desc1', 'Desc2','Rate','Produced','Remaining'],
+				data: series
+				}).render(document.getElementById("JobSchedule"));
+			}
+		}	
+		GetJobsSched();
+	}
+	// ================================ Other script stuff ===============================
+	{
+		window.setInterval('refresh()', 600000); 	// Refresh Everything every 5+ minutes
+
+	//refresh()
+
+        // Refresh or reload page.
+        function refresh() {
+			// Reload everything on page
+            window.location.reload();
+        }
+
+
+	}
+            
+
+</script>
+

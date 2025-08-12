@@ -1,0 +1,130 @@
+/** It's easier to seperate all of the HTML code from the CSS rather than containing them in the same file.
+    That way, you're not left searching all across the proghram to style the page. Everything is right here.
+*/
+
+/* Required to properly size the boxes to scale on the entire screen */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: visible;
+}
+
+/* From Steve's handlebars page*/
+.ct-bar {
+  /* The width of your bars */
+  stroke-width: 20px;
+}
+.ct-series-a .ct-bar {
+  stroke: green;
+}
+.ct-series-b .ct-bar {
+  stroke: #aa0000;
+}
+.ct-series-c .ct-bar {
+  stroke: blue;
+}
+
+/* Make the numbered text more readable in the gauges*/
+.ct-label {
+	font-weight: bold;
+	font-size: 1rem;
+	fill: white;
+}
+.ct-series-a .ct-slice-donut {
+  stroke: blue;
+}
+.ct-series-b .ct-slice-donut {
+  stroke: #aaaaaa;
+}
+
+.label {
+  display: flex;
+}
+
+/* Overwriting style sheets in a seperate file makes the code easier to read */
+.dashboard {
+  width: 99%;
+  height: 100%;
+  display: inline-block;
+}
+.dashboardContent {
+  height: 100%;
+}
+.header {
+  display: flex;
+  justify-content: center;
+}
+
+/* Ensures the bar graph takes up all of the space in its div*/
+.mainChartContainer {
+  height: 40%;
+}
+.ChartBar {
+  height: 100%;
+}
+
+/* Centers the web links below the bar graph*/
+.linkString {
+  width: 99%; 
+  text-align: center;
+}
+
+/* Aligns gauges on the bottom of the page*/
+.gaugeRow {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+}
+
+.gaugeContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 1% 20% 1% 20%;
+}
+
+/* Passed textbox on the dashboard */
+.passed {
+    background-color: green;
+    color: white;
+    display: inline-block;
+    border-radius:5px;
+    padding: 8px;
+}
+
+/* Failed textbox on the dashboard */
+.failed {
+    background-color: #AA0000;
+    color: white;
+    display: inline-block;
+    border-radius:5px;
+    padding: 8px;
+}
+
+/* Packed textbox on the dashboard */
+.packed {
+    background-color: blue;
+    color: white;
+    display: inline-block;
+    border-radius:5px;
+    padding: 8px;
+}
+
+/* Structuring of the total count boxes above */
+.totalCount {
+  gap: 10%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.totalCountWrapper {
+  padding-top: 3%;
+  margin: 1% 12% 1% 12%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

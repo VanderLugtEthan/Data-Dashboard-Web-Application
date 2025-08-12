@@ -1,0 +1,42 @@
+.ct-bar {
+  /* The width of your bars */
+  stroke-width: 20px;
+}
+.ct-series-a .ct-point, .ct-series-a .ct-line, .ct-series-a .ct-bar, .ct-series-a .ct-slice-donut {
+    stroke: green; }
+.ct-series-b .ct-point, .ct-series-b .ct-line, .ct-series-b .ct-bar, .ct-series-b .ct-slice-donut {
+    stroke: #AA0000; }
+.ct-series-c .ct-point, .ct-series-c .ct-line, .ct-series-c .ct-bar, .ct-series-c .ct-slice-donut {
+    stroke: #f4c63d; }
+
+.ct-series-a {
+  /* Colour of your bars */
+    stroke: red;
+}
+.ct-series-b {
+  /* Colour of your bars */
+    stroke: green;
+}
+.dashboard {
+  width: 99%; 
+  height: 99%;
+  display: inline-block;
+}
+.graphRow {
+  width: 100%; 
+  height: 48%; 
+  display: 
+  inline-block; 
+  background-color: 
+  rgb(255, 255, 255);
+}
+
+.alignItems {
+  justify-content: center;
+  align-items: center;
+}
+
+.failed .center .passed{
+  display: inline-block
+}
+
