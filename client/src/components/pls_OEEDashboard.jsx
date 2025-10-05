@@ -2,7 +2,8 @@
  * The OEE Dashboard displays OEE Data about each machine in a given department (Production, Availability, and Total OEE)
  * Each calculation is taken from the SQL/common database, and is currently provided by a report from an excel spreadsheet
  * If any changes are made to the method in which the data is collected, so long as the database entires remain, this dashboard will automatically adjust to these changes
- * 
+ * Modified this comment for an assignment in CS3141
+ *
  * @author Ethan VanderLugt
  * @rev 2025-08-05
  * 
