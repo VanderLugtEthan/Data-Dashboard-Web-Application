@@ -1,0 +1,244 @@
+<script src="/chartist/chartist.js"></script>
+<script src="/scripts/gridjs.umd.js"></script>
+<script src="/chartist/chartist-plugin-axistitle.js"></script>
+<style>
+ .ct-bar {
+    /* The width of your bars */
+    stroke-width: 40px;
+  } 
+  .ct-series-a .ct-point, .ct-series-a .ct-line, .ct-series-a .ct-bar, .ct-series-a .ct-slice-donut {
+  stroke: green; }
+    .ct-series-b .ct-point, .ct-series-b .ct-line, .ct-series-b .ct-bar, .ct-series-b .ct-slice-donut {
+  stroke: #f4c63d; }
+  .ct-series-c .ct-point, .ct-series-c .ct-line, .ct-series-c .ct-bar, .ct-series-c .ct-slice-donut {
+  stroke: #AA0000; }
+  .ct-label {
+    font-size: 25px;
+}
+ .picked  {background-color:green;   color:white; font-size: 25px; border-radius:5px; padding: 0px;}
+ .picking {background-color:#f4c63d; color:white; font-size: 25px; border-radius:5px; padding: 0px;}
+ .pick    {background-color:#AA0000; color:white; font-size: 25px; border-radius:5px; padding: 0px;}
+</style>
+
+<div class="dashboard" style="width: 100%; height:99%;display: inline-block;">
+	<div class="dashboardRow" style="width:99%; height: 99%; background-color: rgb(255, 255, 255); display: block; " align='center'>
+		<div class="dashboardChart" style="width: 95%; height:99%;  background-color: rgb(255, 255, 255); " align='center'>
+			<br/>
+			<div align='center' class="ChartTitle">{{{ParmLocation}}} PU Material Handler Dashboard By Line in Hours</div>
+			<p></p>
+			<div id="LinesStocked" class="ct-chart ct-bar"  align='center' style="width: 100%; height:50%;"></div>
+			<p></p>
+			<div align='center'>
+				<div class="passed" style="font: bold 24px Arial;" >Picked</div>
+				<div class="warning" style="font: bold 24px Arial;" >Picking</div>
+				<div class="failed" style="font: bold 24px Arial;" >To Pick</div>
+			</div>
+			<div id="WOsByLine">Waiting</div> 
+		</div>
+	</div>
+</div>
+<script>
+	document.title = 'PU Picking';
+{
+
+	var optionsBarL = {
+		type: 'bar',
+		reverseData: true,
+        stackBars: true,
+		seriesBarDistance: 40,
+		beginAtZero: true,
+		chartPadding: 40,
+		low: 0,
+		high: 50,
+		axisY: {
+        	onlyInteger: true
+        },
+		plugins: [
+			Chartist.plugins.ctAxisTitle({
+				axisY: {
+					axisTitle: "Amount",
+					axisClass: "ct-axis-title",
+					textAnchor: 'middle',
+					flipTitle: false,
+				},
+				axisX: {
+					axisTitle: "Lines",
+					axisClass: "ct-axis-title",
+					textAnchor: 'middle',
+					flipTitle: false
+				}
+			})
+		]
+	};
+
+	const ParmLocation = '{{{ParmLocation}}}';
+	
+	}
+	// ============================= Populate Job Picking Chart ==========================
+	{
+			const rotateMatrix90 = (source,direction) => {
+		// get the dimensions of the source matrix
+		const M = source.length;
+		const N = source[0].length;
+
+		// create a new NxM destination array
+		let destination = new Array(N);
+		for (let i = 0; i < N; i++) {
+			destination[i] = new Array(M);
+		}
+
+		// start copying from source into destination
+		for (let i = 0; i < N; i++) {
+			for (let j = 0; j < M; j++) {
+				if (direction == 'right') {
+					//right turn (clockwise) 
+					destination[i][j] = source[M - j - 1][i];
+				} else {
+					//left turn (counter clockwise)
+					destination[i][j] = source[j][N - i - 1];
+				}
+			}
+		}
+		// return the rotated matrix
+		return destination;
+	};
+		// Declare a new empty chart
+		var ChartLinesStocked = new Chartist.Bar('#LinesStocked',  { labels: [],  series: [] }, optionsBarL);
+		
+		//Get data using API
+		function GetLinesStocked() { 
+			let ParmLines = '';
+			if ('{{{ParmLocation}}}' === 'BHGR') {
+				ParmLines = '01,02,03,04,05,06,07,09,10,11,12';
+			}
+			if ('{{{ParmLocation}}}' === 'BHEL') {
+				ParmLines = '30,31'
+			}
+			if ('{{{ParmLocation}}}' === 'BHLO') {
+				ParmLines = '20'
+			}
+			const reqL = new XMLHttpRequest()
+			reqL.addEventListener("load", reqListenerLines);
+			reqL.open("GET", `../../api/ScheduledVsPicked/{{{ParmLocation}}}/${ParmLines}`);
+			reqL.send();
+			
+			function reqListenerLines () {
+				const result = JSON.parse(this.responseText);
+				let labels = [];
+				let series = [];
+				result.forEach(function(row){
+					labels.push(Object.values(Object.values(row))[0]);
+					series.push([Object.values(Object.values(row))[1],
+								Object.values(Object.values(row))[2],
+								Object.values(Object.values(row))[3]]);
+				});
+				//rotate the series 90 degrees counter clockways
+				series = rotateMatrix90(series,"left");
+
+/*
+				let source = series;
+				let direction = 'left';
+				// get the dimensions of the source matrix
+				const M = source.length;
+				const N = source[0].length;
+
+				// create a new NxM destination array
+				let destination = new Array(N);
+				for (let i = 0; i < N; i++) {
+					destination[i] = new Array(M);
+				}
+
+				// start copying from source into destination
+				for (let i = 0; i < N; i++) {
+					for (let j = 0; j < M; j++) {
+						if (direction == 'right') {
+							//right turn (clockwise) 
+							destination[i][j] = source[M - j - 1][i];
+						} else {
+							//left turn (counter clockwise)
+							destination[i][j] = source[j][N - i - 1];
+						}
+					}
+				}
+				// return the rotated matrix
+				series = destination;
+
+*/
+
+
+				const chartdata = { labels: labels,  series: series };
+				console.log(chartdata);
+				ChartLinesStocked.update(chartdata);
+			}
+		}	
+
+		GetLinesStocked();
+	}
+		// ============================= Populate WO's by Line Grid ========================
+	{
+		//define chart
+		//var ChartSecondShift = new Chartist.Pie('#SecondShift',  { labels: [],  series: [] }, optionsDonut);
+
+
+		function GetWOsData() { 
+			let ParmLines = '';
+			if ('{{{ParmLocation}}}' === 'BHGR') {
+				ParmLines = '01,02,03,04,05,06,07,09,10,11,12';
+			}
+			if ('{{{ParmLocation}}}' === 'BHEL') {
+				ParmLines = '30,31'
+			}
+			if ('{{{ParmLocation}}}' === 'BHLO') {
+				ParmLines = '20'
+			}
+			const reqJ = new XMLHttpRequest()
+			reqJ.addEventListener("load", reqListenerWOs);
+			reqJ.open("GET", `../../api/WOsPerLine/{{{ParmLocation}}}/${ParmLines}`);
+			reqJ.send();
+
+		}	
+
+
+		function reqListenerWOs () {
+			const result = JSON.parse(this.responseText);
+			//console.log("api job result:" + JSON.stringify(result));
+			const labels = [];
+			let series = [];
+			result.forEach(function(row,i){
+				labels.push([Object.values(Object.values(row))[0]]);
+				series.push([Object.values(Object.values(row))[1]]);
+			});
+			document.getElementById("WOsByLine").innerHTML = '';
+
+			let elwidth  = document.getElementById("WOsByLine").getBoundingClientRect().width / (result.length) * .91;
+			//console.log(`parentwidth: ${document.getElementById("WOsByLine")} / ${result.length} = elwidth: ${elwidth}`);
+			var ih = `<TABLE border=0><TR><TD style="width: ${elwidth/2.5}px;"></TD>`;
+			series.forEach(function (l, index) {
+				//console.log(l, index);
+				ih += `<TD style="width: ${elwidth}px; text-align:center; vertical-align:top">${series[index]}</TD>`
+			});
+			ih += '</tr></TABLE';
+			document.getElementById("WOsByLine").innerHTML = ih;	
+		}
+
+		//Get data using API
+		//window.setInterval(GetWOsData, 10000); // How often to get data 
+		//initial data get 
+		GetWOsData();
+	}
+	// ================================ Other script stuff ===============================
+	{
+		window.setInterval('refresh()', 600000); 	// Refresh Everything every thousandths seconds 
+
+	//refresh()
+
+        // Refresh or reload page.
+        function refresh() {
+			// Reload everything on page
+            window.location.reload();
+        }
+
+
+	}
+            
+</script>

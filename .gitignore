@@ -1,0 +1,4 @@
+# Any credential files must be ignored
+*.json
+node_modules/
+build/ 

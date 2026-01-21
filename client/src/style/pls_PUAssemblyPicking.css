@@ -1,0 +1,78 @@
+.ct-bar {
+    stroke-width: 40px;
+} 
+.ct-series-a .ct-point, .ct-series-a .ct-line, .ct-series-a .ct-bar, .ct-series-a .ct-slice-donut {
+  stroke: green; 
+}
+.ct-series-b .ct-point, .ct-series-b .ct-line, .ct-series-b .ct-bar, .ct-series-b .ct-slice-donut {
+  stroke: #f4c63d; 
+}
+.ct-series-c .ct-point, .ct-series-c .ct-line, .ct-series-c .ct-bar, .ct-series-c .ct-slice-donut {
+  stroke: #AA0000; 
+}
+.ct-label {
+    font-size: 25px;
+}
+
+.dashboard {
+  width: 100%; 
+  height:99%;
+  display: inline-block;
+}
+
+.dashboardRow {
+  width:99%; 
+  height: 99%; 
+  background-color: 
+  rgb(255, 255, 255); 
+  display: block; 
+  align-items: center;
+}
+
+.dashboardChart {
+  width: 95%; 
+  height:99%;  
+  background-color: rgb(255, 255, 255); 
+  align-items: center;
+}
+
+.picked  {
+    background-color:green;   
+    color:white; 
+    font-size: 25px; 
+    border-radius:5px; 
+    padding: 0px;
+}
+ .picking {
+    background-color:#f4c63d; 
+    color:white; 
+    font-size: 25px; 
+    border-radius:5px; 
+    padding: 0px;
+}
+
+.pick {
+    background-color:#AA0000; 
+    color:white; 
+    font-size: 25px; 
+    border-radius:5px; 
+    padding: 0px;
+}
+
+.ct-chart {
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.passed {
+  font: bold 24px Arial;
+}
+
+.warning {
+  font: bold 24px Arial
+}
+
+.failed {
+  font: bold 24px Arial;
+}

@@ -1,0 +1,639 @@
+
+<script src="/chartist/chartist.js"></script>
+<script src="/scripts/gridjs.umd.js"></script>
+
+{{!-- Required to show style sheet import on the head for now --}}
+<style>
+.ct-bar {
+  /* The width of your bars */
+  stroke-width: 20px;
+}
+.ct-series-a .ct-point, .ct-series-a .ct-line, .ct-series-a .ct-bar, .ct-series-a .ct-slice-donut {
+    stroke: green; }
+.ct-series-b .ct-point, .ct-series-b .ct-line, .ct-series-b .ct-bar, .ct-series-b .ct-slice-donut {
+    stroke: #AA0000; }
+.ct-series-c .ct-point, .ct-series-c .ct-line, .ct-series-c .ct-bar, .ct-series-c .ct-slice-donut {
+    stroke: #f4c63d; }
+
+.ct-series-a {
+  /* Colour of your bars */
+    stroke: red;
+}
+.ct-series-b {
+  /* Colour of your bars */
+    stroke: green;
+}
+</style>
+
+
+{{!-- <script src="../public/Javascript/chartist-plugin-legend"></script> --}}
+
+<div  class="dashboard" style="width: 99%; height:99%;display: inline-block;">
+	<div class="dashboardRow" style="width: 100%; height: 48%; display: inline-block; background-color: rgb(255, 255, 255);">
+		{{!-- First Shift Testing --}}
+		<div class="dashboardChart" style="width: 25%; height:100%; display:inline-block; background-color: rgb(255, 255, 255); ">
+			<br>
+			<div align='center' class="ChartTitle">Test result totals for 1st Shift</div>
+			<br/>
+			<div align='center'>
+				<div id="FirstShift" class="ct-chart"></div>
+			</div>
+			<br/>
+			<div align='center' >
+				Percent Failures&nbsp;
+				<div id="Shift1FailedPercent" class="failed" style="display: inline-block">??</div>
+				<div align='center' style="display: inline-block">Percent Passes </div>&nbsp;
+				<div id="Shift1PassedPercent" class="passed" style="display: inline-block">??</div>
+			</div>
+			<br/>
+			<div align='center'>
+				Total Failures&nbsp;
+				<div id="Shift1FailedTotal" class="failed" style="display: inline-block">?</div>
+				<div align='center' style="display: inline-block">Total Passes </div>&nbsp;
+				<div id="Shift1PassedTotal" class="passed" style="display: inline-block">?</div>
+			</div>
+			{{!-- <div align='center'>
+				Packed&nbsp;
+				<div id="Shift1Packed" class="passed" style="display: inline-block">?</div>
+			</div> --}}
+		</div>
+		<div class="dashboardChart" style="width: 47%; height:100%; display: inline-block; background-color: rgb(255, 255, 255);">
+			<br>
+			<div align='center' class="ChartTitle">Location:{{ ParmLocation }} 
+				 Line:{{ ParmLine }} Power Unit Hourly Tests</div>
+			<div id="TargetRate" class="ct-chart" style="width: 99%; height: 84%; "></div>
+			<div align='center'>  
+				<div class="passed">&nbsp;PASSED&nbsp;</div>
+				<div class="target">&nbsp;TARGET&nbsp;</div>
+				<div class="failed">&nbsp;FAILED&nbsp;</div>
+			</div>
+		</div>
+		<div class="dashboardChart" style="width: 25%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<br/>
+			<div align='center' class="ChartTitle">Test result totals for 2nd Shift</div>
+			<br/>
+			<div align='center'>
+				<div id="SecondShift" class="ct-chart" style="width: 90%; height: 70%;"></div>
+			</div>
+			<br/>
+			<div align='center' >
+				Percent Failures&nbsp;
+				<div id="Shift2FailedPercent" class="failed" style="display: inline-block">??</div>
+				<div align='center' style="display: inline-block">Percent Passes </div>&nbsp;
+				<div id="Shift2PassedPercent" class="passed" style="display: inline-block">??</div>
+			</div>
+			<br/>
+			<div align='center'>
+				Total Failures&nbsp;
+				<div id="Shift2FailedTotal" class="failed" style="display: inline-block">?</div>
+				<div align='center' style="display: inline-block">Total Passes </div>&nbsp;
+				<div id="Shift2PassedTotal" class="passed" style="display: inline-block">?</div>
+			</div>
+			{{!-- <div align='center'>
+				Packed&nbsp;
+				<div id="Shift2Packed" class="passed" style="display: inline-block">?</div>
+			</div> --}}
+		</div>
+	</div>
+	<div class="dashboardRow" style="width:100%; height: 10%; background-color: rgb(255, 255, 255); ">
+		<div class="dashboardChart" align='center' style="width: 98.75%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<div id= class="ct-chart" style="width: 90%; height:66%; " visible="true">
+				<div align='center' class="ChartTitle">Line Alerts</div>
+				<div id="AlertPick" class="AlertPick" visible="false" style="width: 24%;display: inline-block;"><span class="text">Picking Alert</span></div>
+				<div id="AlertHelp" class="AlertHelp" visible="false" style="width: 24%;display: inline-block;"><span class="text">Help Alert</span></div>
+				<div id="AlertDown" class="AlertDown"  visible="false" style="width: 24%;display: inline-block;"><span class="text">Line Down</span></div>
+			</div>
+			<div id="PickedChart" class="ct-chart ct-bar"  align='center' style="width: 100%; height:10%;"></div>
+		</div>
+	</div>
+	<div class="dashboardRow" style="width:100%; height: 43%; background-color: rgb(255, 255, 255); ">
+		<div class="dashboardChart" style="width: 98.75%; height:99%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<div align='center' class="ChartTitle">Power Unit Production Schedule</div>
+			<div align='center'>
+				<div id="JobSchedule" style="width: 99%; height: 100%;">Waiting</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+
+	//var ip = require('ip');
+	//console.log(`IP is ${ip.address()}`);
+
+	document.title = 'PU Assembly';
+	const ParmLocation = '{{{ParmLocation}}}';
+    const ParmLine = '{{{ParmLine}}}';
+    const ParmIP = '{{{ParmIP}}}';
+
+	{{!-- var keypress = require('keypress');
+	keypress(process.stdin);
+	// listen for the "keypress" event
+	process.stdin.on('keypress', function (ch, key) {
+		console.log('got "keypress"', key);
+		if (key && key.ctrl && key.name == 'c') {
+			process.stdin.pause();
+		}
+	});
+	
+	console.log(`ip = ${req.session.ip}`);
+
+	process.stdin.setRawMode(true);
+	process.stdin.resume(); 
+	 --}}
+
+// Return this graph in HTML
+	var optionsDonut = {
+		width: '300px',
+	 	height: '300px',
+		donut: true,
+		donutWidth: 70,
+		chartPadding: 0,
+		donutSolid: true,
+		showLabel: false,
+		fillClass: 'ct-fill-donut',
+		label : {
+			html: '<div class="ct-fill-donut-label"></div>',
+		},
+		items : [{
+		class : '',
+			id: '',
+			content : 'fillText',
+			position: 'center', //bottom, top, left, right
+			offsetY: 0, //top, bottom in px
+			offsetX: 0 //left, right in px
+		}]
+	};
+	var optionsLine = {
+			showArea: true,
+			axisY: {
+				onlyInteger: true
+			},
+			fullWidth: true
+	};
+	const rotateMatrix90 = (source,direction) => {
+		// get the dimensions of the source matrix
+		const M = source.length;
+		const N = source[0].length;
+
+		// create a new NxM destination array
+		let destination = new Array(N);
+		for (let i = 0; i < N; i++) {
+			destination[i] = new Array(M);
+		}
+
+		// start copying from source into destination
+		for (let i = 0; i < N; i++) {
+			for (let j = 0; j < M; j++) {
+				if (direction == 'right') {
+					//right turn (clockwise) 
+					destination[i][j] = source[M - j - 1][i];
+				} else {
+					//left turn (counter clockwise)
+					destination[i][j] = source[j][N - i - 1];
+				}
+			}
+		}
+		// return the rotated matrix
+		return destination;
+	};
+
+	function tablerowFormat(table,column,compare,value,ExtraClass) {
+		//console.log("tablerowFormat:" + table + ' ' + column + compare + value + ' ' + ExtraClass);
+		document.getElementsByClassName(table)[0].id = 'TheTable';
+		var rows = document.getElementById('TheTable').getElementsByTagName('tr');
+		//Find heading column in first row that matches parm
+		for (var c = 0; c <= rows[0].children.length && rows[0].children[c].innerHTML.indexOf(column) === -1; c++);
+
+		if (c > rows[0].children.length) {
+			console.log('Column ' + column + ' was not found');
+		} else {
+			//console.log('Column [' + column + '] found in ' + rows[0].children[c].innerHTML);
+			//For each row if column value = or <> parm value, do some styling
+			for (var r = 1; r < rows.length  &&  rows.length > 0; r++) {
+				if (compare === '=') {
+					// must match value
+					try {
+						if (rows[r].children[c].innerHTML.indexOf(value) > -1) { 
+							//console.log('Got = at row ' + r + ' in column ' + c + ' within ' + rows[r].children[c].innerHTML + ' for ' + value );
+							let t = rows[r].children[c].innerHTML
+							t = t.replace(value,'');
+							rows[r].children[c].innerHTML = t;
+							rows[r].children[c-2].className = ' ' + ExtraClass;
+							
+						} else {
+							// must NOT match value
+							if (rows[r].children[c].innerHTML.indexOf(value) = -1) { 
+							}
+						}
+					} catch(err) {
+						// Do nothing
+					}
+				} 
+			}
+		}
+	};
+
+	// Create charts with data and options (some data passed from app.js)
+
+	//============================= Populate 1st Shift Chart ===========================
+	{
+		//define chart
+		var ChartFirstShift = new Chartist.Pie('#FirstShift',  { labels: [],  series: [] }, optionsDonut);
+		//initial data get 
+		GetShift1Data();
+
+		//Get data using API
+		window.setInterval(GetShift1Data, 65000); // How often to get data 
+
+		function GetShift1Data() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListener1);
+			req1.open("GET", '../../api/TestResults/{{{ParmLocation}}}/{{{ParmLine}}}/Shift1');
+			req1.send();
+
+			function reqListener1 () {
+				const result = JSON.parse(this.responseText);
+				ChartFirstShift.update(result);
+				var dataTests = result.series[0] + result.series[1];
+				document.getElementById('Shift1FailedPercent').innerHTML = '&nbsp' + Math.round(result.series[1] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift1PassedPercent').innerHTML = '&nbsp' + Math.round(result.series[0] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift1FailedTotal').innerHTML = '&nbsp' + result.series[1] + '&nbsp';
+				document.getElementById('Shift1PassedTotal').innerHTML = '&nbsp' + result.series[0] + '&nbsp';
+
+				var FailPercent = Math.round(result.series[1] / (dataTests + .0001) * 1000) / 10;
+
+				const d = new Date();
+				let minute = d.getMinutes();
+				if ((minute == 50 && dataTests > 9 && d.getHours() > 5 && d.getHours() < 17) )   {
+					if ( FailPercent > 19 ) {
+							const req2 = new XMLHttpRequest();
+							req2.addEventListener("load", reqListenerEmail);
+							//
+							req2.open("POST", `../../api/SendEmail/PUFail/Lee.Waldmiller@BucherHydraulics.com,Sheldon.Schreur@BucherHydraulics.com,Luke.Richard@BucherHydraulics.com,Andrew.Sammon@BucherHydraulics.com/${ParmLocation} Line${ParmLine} Shift1 fail percent ${FailPercent} > 19/Testing results for ${dataTests} units`);
+							req2.send();
+							function reqListenerEmail() {} 
+						} else if (FailPercent > 14 ) {
+							const req2 = new XMLHttpRequest();
+							req2.addEventListener("load", reqListenerEmail);
+							req2.open("POST", `../../api/SendEmail/PUFail/Harold.Allen@BucherHydraulics.com,Tim.Kluz@BucherHydraulics.com/${ParmLocation} Line${ParmLine} Shift1 fail percent  ${FailPercent} > 14/Testing results for ${dataTests} units`);
+							//NhatNam.Nguyen@bucherhydraulics.com>,Chris.Mathieu@BucherHydraulics.com,
+							req2.send();
+							function reqListenerEmail() {} 
+						}
+					//console.log(`Minute: ${minute} tests: ${dataTests} `);
+					{{!-- const reqhost = new XMLHttpRequest();
+					reqhost.addEventListener("load", reqListenerhost);
+					reqhost.open("GET", '../../api/GetClientHostname/');
+					reqhost.send();
+					function reqListenerhost () {
+						const clienthost = JSON.parse(this.responseText);
+						//console.log(`clienthost is ${clienthost}`);
+						// only report if client is tv panel and...
+						//document.getElementById('test').innerHTML = clienthost;
+						//clienthost.includes('uh5f') &&
+						
+					}  
+					--}}
+				}
+			}
+		}
+	}
+	//=============================== Populate 24 Hour Trend ===========================
+	{
+
+		//define chart
+		var chart24 = new Chartist.Line('#TargetRate',  { labels: [],  series: [] }, optionsLine);
+
+		//initial data get 
+		GetTargetRateData();
+
+		window.setInterval(GetTargetRateData, 60000); // How often to get data 
+
+		function GetTargetRateData() {
+			const req24 = new XMLHttpRequest();
+			req24.addEventListener("load", reqListener24);
+			req24.open("GET", '../../api/24HourTrend/{{{ParmLocation}}}/{{{ParmLine}}}');
+			req24.send();
+			
+			function reqListener24 () {
+				const result = JSON.parse(this.responseText);
+				//console.log("api result:" + this.responseText);
+				const labels = [];
+				let series = [];
+				result.forEach(function(row){
+					labels.push(Object.values(Object.values(row))[0]);
+					series.push([Object.values(Object.values(row))[1],
+								Object.values(Object.values(row))[2],
+								Object.values(Object.values(row))[3]]);
+				});
+				//rotate the series 90 degrees counter clockways
+				series = rotateMatrix90(series,"left");
+				const chartdata = { labels: labels,  series: series };
+				//console.log(`C2 JSON:  ` + JSON.stringify(chartdata))
+				//var chart24 = new Chartist.Line('#TargetRate', chartdata, optionsLine); 
+				chart24.update(chartdata);
+			}
+		}
+	}
+	//============================= Populate 2nd Shift Chart ===========================
+	{
+				//define chart
+		var ChartSecondShift = new Chartist.Pie('#SecondShift',  { labels: [],  series: [] }, optionsDonut);
+		//initial data get 
+		GetShift2Data();
+
+		//Get data using API
+		window.setInterval(GetShift2Data, 65000); // How often to get data 
+
+		function GetShift2Data() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListener2);
+			req1.open("GET", '../../api/TestResults/{{{ParmLocation}}}/{{{ParmLine}}}/Shift2');
+			req1.send();
+
+			function reqListener2 () {
+				const result = JSON.parse(this.responseText);
+				const chartdata = result; // { labels: labels,  series: series };
+				ChartSecondShift.update(chartdata);
+				var dataTests = result.series[0] + result.series[1];
+				document.getElementById('Shift2FailedPercent').innerHTML = '&nbsp' + Math.round(result.series[1] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift2PassedPercent').innerHTML = '&nbsp' + Math.round(result.series[0] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift2FailedTotal').innerHTML = '&nbsp' + result.series[1] + '&nbsp';
+				document.getElementById('Shift2PassedTotal').innerHTML = '&nbsp' + result.series[0] + '&nbsp';
+
+				var FailPercent = Math.round(result.series[1] / (dataTests + .0001) * 1000) / 10;
+
+				const d = new Date();
+				let minute = d.getMinutes();
+				if (minute == 50  && dataTests > 9 && (d.getHours() > 17 || d.getHours() < 6))   {
+					if (FailPercent > 19) {
+						const req2 = new XMLHttpRequest();
+						req2.addEventListener("load", reqListenerEmail);
+						//
+						req2.open("POST", `../../api/SendEmail/PUFail/Chris.Mathieu@BucherHydraulics.com/${ParmLocation} Line${ParmLine} Shift1 fail percent ${FailPercent} > 19/Testing results for ${dataTests} units`);
+						req2.send();
+						function reqListenerEmail() {} 
+					} else if (FailPercent > 14) {
+						const req2 = new XMLHttpRequest();
+						req2.addEventListener("load", reqListenerEmail);
+						req2.open("POST", `../../api/SendEmail/PUFail/NhatNam.Nguyen@bucherhydraulics.com>,Chris.Mathieu@BucherHydraulics.com/${ParmLocation} Line${ParmLine} Shift2 fail percent ${FailPercent}% > 14 /Testing results for ${dataTests} units`);
+						req2.send();
+						function reqListenerEmail() {} 
+					}
+				}
+			}
+		}
+	}
+	// ============================= Populate Job Schedule Grid ========================
+	{
+		//define chart
+		//var ChartSecondShift = new Chartist.Pie('#SecondShift',  { labels: [],  series: [] }, optionsDonut);
+
+		function reqListenerJobs () {
+			const result = JSON.parse(this.responseText);
+			//console.log("api job result:" + JSON.stringify(result));
+			const labels = [];
+			let series = [];
+			result.forEach(function(row,i){
+				//Pu
+				{{!-- if(result[i].Exception === 'Y') {
+					result[i].AssemblyComment = 'ZZZ' + result[i].AssemblyComment;
+				} --}}
+				series.push([Object.values(Object.values(row))[0],
+							Object.values(Object.values(row))[1],
+							Object.values(Object.values(row))[2],
+							Object.values(Object.values(row))[3],
+							Object.values(Object.values(row))[4],
+							Object.values(Object.values(row))[5],
+							Object.values(Object.values(row))[6],
+							Object.values(Object.values(row))[7],
+							Object.values(Object.values(row))[8],
+							Object.values(Object.values(row))[9],
+							Object.values(Object.values(row))[10],
+							Object.values(Object.values(row))[11],
+							Object.values(Object.values(row))[12],
+							Object.values(Object.values(row))[13],
+							Object.values(Object.values(row))[18],
+							Object.values(Object.values(row))[15]
+							]);
+			});
+			//console.log(series[1][1]);
+			document.getElementById("JobSchedule").innerHTML = '';
+			const grid = new gridjs.Grid({
+				columns: ['Seq', ' ! ', 'Item', 'F', 'Ord', 'Open', 'Pk%',
+				{ name: 'Req Date', attributes: {'width': 90} } , 'Rate', 'Pack', 'WO', 'SO', { name: 'Sold To', attributes: {'width': 180} }, 'Assembly Comment', 'Exception Comment',
+				//{ name: 'E', attributes: {'width': 10, 'visibility': hidden} } ],
+				{ name: '.', width: 0 }],
+				data: series
+				}).render(document.getElementById("JobSchedule"));
+			grid.on('rowClick', () => toggleCustomerNames() );
+			// highlight rows based on criteria
+			//tablerowFormat('gridjs-table','Assembly Comment','=','ZZZ','exceptionClass');
+			tablerowFormat('gridjs-table','.','=','Y','exceptionClass')
+		}
+		function GetJobsData() { 
+			const reqJ = new XMLHttpRequest()
+			reqJ.addEventListener("load", reqListenerJobs);
+			reqJ.open("GET", '../../api/ProductionSchedule/{{{ParmLocation}}}/{{{ParmLine}}}');
+			reqJ.send();
+
+		}	
+		//Get data using API
+		window.setInterval(GetJobsData, 10000); // How often to get data 
+		//initial data get 
+		GetJobsData();
+	}
+	// ============================= Job Schedule Grid toggle names==============================
+	{	
+		function toggleCustomerNames () {
+			//const t = document.getElementById("JobSchedule");
+			//console.log(t);
+			
+			const reqF = new XMLHttpRequest()
+			reqF.addEventListener("load", reqListenerJobsFilter);
+			reqF.open("POST", '../../api/ProductionScheduleFilter/{{{ParmLocation}}}/{{{ParmLine}}}');
+			reqF.send();
+			
+			function reqListenerJobsFilter () {
+				console.log("api result:" + this.responseText);
+				refresh();
+			}
+		}
+	}
+	// ================================ Populate HIstory chart==================================== 
+	{
+		//define chart
+		//var ChartHistoryShift = new Chartist.Pie('#HistoryChart',  { labels: [],  series: [] }, optionsDonut);
+		//initial data get 
+		//GetHistoryData();
+
+		//Get data using API
+		//window.setTimeout(GetHistoryData, 600000); // How often to get data 
+
+		//function GetHistoryData() { 
+		//	const req1 = new XMLHttpRequest();
+		//	req1.addEventListener("load", reqListenerH);
+		//	req1.open("GET", '../../api/TestResults/{{{ParmLocation}}}/{{{ParmLine}}}/History');
+		//	req1.send();
+//
+//			function reqListenerH () {
+//				const result = JSON.parse(this.responseText);
+//				const chartdata = result; // { labels: labels,  series: series };
+//				ChartHistoryShift.update(chartdata);
+//				var dataTests = result.series[0] + result.series[1];
+//				document.getElementById('HistoryFailedPercent').innerHTML = '&nbsp' + Math.round(result.series[1] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+//				document.getElementById('HistoryPassedPercent').innerHTML = '&nbsp' + Math.round(result.series[0] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+//				document.getElementById('HistoryFailedTotal').innerHTML = '&nbsp' + result.series[1] + '&nbsp';
+//				document.getElementById('HistoryPassedTotal').innerHTML = '&nbsp' + result.series[0] + '&nbsp';
+//			}
+//		}
+	}
+		// ================================ Populate Alert Panel ==================================== 
+	{
+		// This new version for the window is about picking.  
+		// for now it will just be an alert light simulator
+		// eventually i want to show how many minutes of assembly is picked
+
+		//initial data get 
+		GetAlertStatus();
+
+		//Get data using API
+		window.setTimeout(GetAlertStatus, 30000); // How often to get data  30 seconds
+
+		function GetAlertStatus() { 
+
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListenerAS);
+			req1.open("GET", '../../api/LineInfo/{{{ParmLocation}}}/PU/{{{ParmLine}}}');
+			req1.send();
+
+			function reqListenerAS () {
+				
+				const result = JSON.parse(this.responseText);
+				//console.log(result.recordset[0]);
+				if (result.recordset[0].StatusPick) {
+					document.getElementById('AlertPick').style.visibility = 'visible'
+				} else {
+					document.getElementById('AlertPick').style.visibility = 'hidden'
+				}
+				
+				if (result.recordset[0].StatusHelp) {
+					document.getElementById('AlertHelp').style.visibility = 'visible'
+				} else {
+					document.getElementById('AlertHelp').style.visibility = 'hidden'
+				}
+				
+				if (result.recordset[0].StatusDowntime) {
+					document.getElementById('AlertDown').style.visibility = 'visible'
+				} else {
+					document.getElementById('AlertDown').style.visibility = 'hidden'
+				}
+
+			}
+		}
+	}
+		//============================= Populate Packing Info ===========================
+	{
+		//initial data get 
+		GetPackingData();
+
+		//Get data using API
+		window.setInterval(GetPackingData, 55000); // How often to get data 
+
+		function GetPackingData() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListener1);
+			req1.open("GET", '../../api/PackingTotals/{{{ParmLocation}}}/PU/{{{ParmLine}}}');
+			req1.send();
+
+			function reqListener1 () {
+				const result = JSON.parse(this.responseText);
+				var dataTests = result.series[0] + result.series[1];
+				document.getElementById('Shift1Packed').innerHTML = '&nbsp' + result.series[1] + '&nbsp';
+				document.getElementById('Shift2Packed').innerHTML = '&nbsp' + result.series[0] + '&nbsp';
+			}
+		}
+	}
+	// =================================Other script stuff
+	{
+		
+		//window.setInterval('refresh()', 301000); 	// Refresh Everything every 5+ minutes
+
+        // Refresh or reload page.
+        function refresh() {
+			// Reload everything on page
+            window.location.reload();
+        }
+
+		{{!-- $(document).keypress(function (e) {
+            var url = new URL(location.href);
+            alert(e.which + ' pressed for currently ' + locatn + ' ' + line);
+
+            if (e.which == 114) { // H pressed to HIDE CUSTOMER NAMES
+               	toggleCustomerNames(); 
+
+            }
+            if (e.which == 97) { // A pressed to go to admin options
+                url.href = 'http://s5003013:81/LPFOptions.aspx';
+            }
+            if (e.which > 47 && e.which < 59) {  // number pressed so switch line
+                if (locatn == 'BHGR') {
+                    url.searchParams.set('line', e.which - 48); // 0-9
+                    sessionStorage.setItem('line', e.which - 48); 
+                }
+                if (locatn == 'BHLO') {
+                    url.searchParams.set('line', e.which - 28); // 20-29
+                    sessionStorage.setItem('line', e.which - 28); 
+                }
+                if (locatn == 'BHEL') {
+                    url.searchParams.set('line', e.which - 18); //30-39
+                    sessionStorage.setItem('line', e.which - 18);
+                } 
+            }
+            // Letter E, G, or L pressed so set location
+            if (e.which == 101) {
+                url.searchParams.set('locatn', 'BHEL');
+                sessionStorage.setItem('location', 'BHEL');
+            }
+            if (e.which == 103) {
+                url.searchParams.set('locatn', 'BHGR');
+                sessionStorage.setItem('location', 'BHGR');
+            }
+            if (e.which == 108) {
+                url.searchParams.set('locatn', 'BHLO');
+                sessionStorage.setItem('location', 'BHLO');
+            }
+            if (e.which == 104) { // H pressed to go to HELP
+                url.href = 'http://s5003013:81/LPFHelp.aspx';
+            }
+            if (url.toString()  > " ") {
+                window.location.href = url.toString();
+            }
+        }); --}}
+
+     
+	{{!-- window.onload = function () {
+
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+		var locatn = urlParams.get('locatn')
+		var line = urlParams.get('line')
+		try {
+			locatn = sessionStorage.getItem('location');
+			line = sessionStorage.getItem('line');
+		}
+		catch (err) {
+			//alert('Error: ' + err.message);
+		}
+		if (!locatn) {
+			locatn = "BHGR"
+		}
+		if (!line) {
+			line = 1
+		} 
+	}--}}
+	}
+            
+            //document.getElementById('PassFailHoulyTitle').innerHTML = locatn + " Line " + line + " Pass/Fail Over 24 Hours";
+</script>
+

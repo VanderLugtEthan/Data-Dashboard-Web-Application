@@ -1,0 +1,503 @@
+
+<script src="/chartist/chartist.js"></script>
+<script src="/scripts/gridjs.umd.js"></script>
+<style>
+.ct-bar {
+  /* The width of your bars */
+  stroke-width: 20px;
+}
+.ct-series-a {
+  /* Colour of your bars */
+  stroke: red;
+}
+.ct-series-b {
+  /* Colour of your bars */
+  stroke: green;
+}
+</style>
+
+<div  class="dashboard" style="width: 99%; height:99%;display: inline-block;">
+	<div class="dashboardRow" style="width: 100%; height: 48%; display: inline-block; background-color: rgb(255, 255, 255);">
+		{{!-- First Shift Testing --}}
+		<div class="dashboardChart" style="width: 25%; height:100%; display:inline-block; background-color: rgb(255, 255, 255); ">
+			<br>
+			<div align='center' class="ChartTitle">Test result totals for 1st Shift</div>
+			<br/>
+			<div align='center'>
+				<div id="FirstShift" class="ct-chart"></div>
+			</div>
+			<br/>
+			<div align='center' >
+				Percent Failures&nbsp;
+				<div id="Shift1FailedPercent" class="failed" style="display: inline-block">??</div>
+				<div align='center' style="display: inline-block">Percent Passes </div>&nbsp;
+				<div id="Shift1PassedPercent" class="passed" style="display: inline-block">??</div>
+			</div>
+			<br/>
+			<div align='center'>
+				Total Failures&nbsp;
+				<div id="Shift1FailedTotal" class="failed" style="display: inline-block">?</div>
+				<div align='center' style="display: inline-block">Total Passes </div>&nbsp;
+				<div id="Shift1PassedTotal" class="passed" style="display: inline-block">?</div>
+			</div>
+		</div>
+		<div class="dashboardChart" style="width: 46%; height:100%; display: inline-block; background-color: rgb(255, 255, 255);">
+			<p></p>
+			<div align='center' class="ChartTitle">Location:{{ ParmLocation }} 
+				 Line:{{ ParmLine }} Production Status</div>
+			<div id="TargetRate" class="ct-chart" style="width: 99%; height: 90%; "></div>
+			<div align='center'>  
+				<div class="passed">&nbsp;PASSED&nbsp;</div>
+				<div class="target">&nbsp;TARGET&nbsp;</div>
+				<div class="failed">&nbsp;FAILED&nbsp;</div>
+			</div>
+		</div>
+		<div class="dashboardChart" style="width: 25%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<br/>
+			<div align='center' class="ChartTitle">Test result totals for 2nd Shift</div>
+			<br/>
+			<div align='center'>
+				<div id="SecondShift" class="ct-chart" style="width: 90%; height: 70%;"></div>
+			</div>
+			<br/>
+			<div align='center' >
+				Percent Failures&nbsp;
+				<div id="Shift2FailedPercent" class="failed" style="display: inline-block">??</div>
+				<div align='center' style="display: inline-block">Percent Passes </div>&nbsp;
+				<div id="Shift2PassedPercent" class="passed" style="display: inline-block">??</div>
+			</div>
+			<br/>
+			<div align='center'>
+				Total Failures&nbsp;
+				<div id="Shift2FailedTotal" class="failed" style="display: inline-block">?</div>
+				<div align='center' style="display: inline-block">Total Passes </div>&nbsp;
+				<div id="Shift2PassedTotal" class="passed" style="display: inline-block">?</div>
+			</div>
+		</div>
+	</div>
+	<div class="dashboardRow" style="width:100%; height: 48%; background-color: rgb(255, 255, 255); ">
+		<div class="dashboardChart" style="width: 25%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<br/>
+			<div align='center' class="ChartTitle">Shift Goal</div>
+			<br>
+			<div align='center'>
+				<div id="ShiftGoal" class="ct-chart ct-bar" style="width: 90%; height: 49%; stroke:green;"></div>
+			</div>
+			<br/>
+			<div align='center'>
+				<div align='center' class="ChartTitle">Week Shift Totals</div><div id="ShiftTotals"></div><br>
+				<div align='center' class="ChartTitle">Week Grand Total</div><div id="WeekTotal"></div><br>
+			</div>
+		</div>
+		<div class="dashboardChart" style="width: 46%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<div align='center' class="ChartTitle">Production Schedule</div>
+			<div align='center'>
+				<div id="JobSchedule" style="width: 99%; height: 70%;"></div>
+			</div>
+		</div>
+		<div class="dashboardChart" style="width: 25%; height:100%; display: inline-block; background-color: rgb(255, 255, 255); ">
+			<br/>
+			<div align='center' class="ChartTitle">Top 24 Hour Failures</div>
+			<br>
+			<div align='center'>
+				<div id="TopFailures" class="ct-chart" style="width: 90%; height: 70%;"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	document.title = 'JD Testing';
+
+	{{!-- var keypress = require('keypress');
+	keypress(process.stdin);
+	// listen for the "keypress" event
+	process.stdin.on('keypress', function (ch, key) {
+		console.log('got "keypress"', key);
+		if (key && key.ctrl && key.name == 'c') {
+			process.stdin.pause();
+		}
+	});
+	
+	process.stdin.setRawMode(true);
+	process.stdin.resume(); 
+	 --}}
+
+	var optionsDonut = {
+		width: '300px',
+	 	height: '300px',
+		donut: true,
+		donutWidth: 70,
+		chartPadding: 0,
+		donutSolid: true,
+		showLabel: false
+	};
+	var optionsLine = {
+			showArea: true,
+			axisY: {
+				onlyInteger: true
+			},
+			fullWidth: true
+	};
+	var optionsBar = {
+			type: 'bar',
+		barWidth: 70,
+			axisY: {
+				onlyInteger: true
+			},
+			fullWidth: true,
+			fullHeight: true,
+			height: '200%'
+	};
+	
+	const rotateMatrix90 = (source,direction) => {
+		// get the dimensions of the source matrix
+		const M = source.length;
+		const N = source[0].length;
+
+		// create a new NxM destination array
+		let destination = new Array(N);
+		for (let i = 0; i < N; i++) {
+			destination[i] = new Array(M);
+		}
+
+		// start copying from source into destination
+		for (let i = 0; i < N; i++) {
+			for (let j = 0; j < M; j++) {
+				if (direction == 'right') {
+					//right turn (clockwise) 
+					destination[i][j] = source[M - j - 1][i];
+				} else {
+					//left turn (counter clockwise)
+					destination[i][j] = source[j][N - i - 1];
+				}
+			}
+		}
+		// return the rotated matrix
+		return destination;
+	};
+
+	const ParmLocation = '{{{ParmLocation}}}';
+    const ParmLine = '{{{ParmLine}}}';
+	
+
+	// Create charts with data and options (some data passed from app.js)
+
+	//============================= Populate 1st Shift Chart ===========================
+	{
+		//define chart
+		var ChartFirstShift = new Chartist.Pie('#FirstShift',  { labels: [],  series: [] }, optionsDonut);
+		//initial data get 
+		GetShift1Data();
+
+		//Get data using API
+		window.setInterval(GetShift1Data, 60000); // How often to get data 
+
+		function GetShift1Data() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListener1);
+			req1.open("GET", '../../api/TestResultsJDSVC/{{{ParmLocation}}}/{{{ParmLine}}}/Shift1');
+			req1.send();
+
+			function reqListener1 () {
+				const result = JSON.parse(this.responseText);
+				ChartFirstShift.update(result);
+				var dataTests = result.series[0] + result.series[1];
+				document.getElementById('Shift1FailedPercent').innerHTML = '&nbsp' + Math.round(result.series[1] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift1PassedPercent').innerHTML = '&nbsp' + Math.round(result.series[0] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift1FailedTotal').innerHTML = '&nbsp' + result.series[1] + '&nbsp';
+				document.getElementById('Shift1PassedTotal').innerHTML = '&nbsp' + result.series[0] + '&nbsp';
+			}
+		}
+	}
+	//=============================== Populate 24 Hour Trend =============================
+	{
+
+		//define chart
+		var chart24 = new Chartist.Line('#TargetRate',  { labels: [],  series: [] }, optionsLine);
+
+		//initial data get 
+		GetTargetRateData();
+
+		window.setInterval(GetTargetRateData, 60000); // How often to get data 
+
+		function GetTargetRateData() {
+			const req24 = new XMLHttpRequest();
+			req24.addEventListener("load", reqListener24);
+			req24.open("GET", '../../api/24HourTrendJDSVC/{{{ParmLocation}}}/{{{ParmLine}}}');
+			req24.send();
+			
+			function reqListener24 () {
+				const result = JSON.parse(this.responseText); 
+				//console.log("api result:" + result);
+				const labels = [];
+				let series = [];
+				result.forEach(function(row){
+					labels.push(Object.values(Object.values(row))[0]);
+					series.push([Object.values(Object.values(row))[1],
+								Object.values(Object.values(row))[3],
+								Object.values(Object.values(row))[4]]);
+				});
+				//rotate the series 90 degrees counter clockways
+				series = rotateMatrix90(series,"left");
+				const chartdata = { labels: labels,  series: series };
+				//console.log(`Trend JSON:  ` + JSON.stringify(chartdata))
+				//var chart24 = new Chartist.Line('#TargetRate', chartdata, optionsLine); 
+				chart24.update(chartdata);
+			}
+		}
+	}
+	//============================= Populate 2nd Shift Chart ===========================
+	{
+				//define chart
+		var ChartSecondShift = new Chartist.Pie('#SecondShift',  { labels: [],  series: [] }, optionsDonut);
+		//initial data get 
+		GetShift2Data();
+
+		//Get data using API
+		window.setInterval(GetShift2Data, 60000); // How often to get data 
+
+		function GetShift2Data() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListener2);
+			req1.open("GET", '../../api/TestResultsJDSVC/{{{ParmLocation}}}/{{{ParmLine}}}/Shift2');
+			req1.send();
+
+			function reqListener2 () {
+				const result = JSON.parse(this.responseText);
+				const chartdata = result; // { labels: labels,  series: series };
+				ChartSecondShift.update(chartdata);
+				var dataTests = result.series[0] + result.series[1];
+				document.getElementById('Shift2FailedPercent').innerHTML = '&nbsp' + Math.round(result.series[1] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift2PassedPercent').innerHTML = '&nbsp' + Math.round(result.series[0] / (dataTests + .0001) * 1000) / 10 + '%&nbsp';
+				document.getElementById('Shift2FailedTotal').innerHTML = '&nbsp' + result.series[1] + '&nbsp';
+				document.getElementById('Shift2PassedTotal').innerHTML = '&nbsp' + result.series[0] + '&nbsp';
+			}
+		}
+	}
+	// ================================ Populate Goal chart and totals ============================= 
+	{
+	//define chart
+		var ChartShiftGoal = new Chartist.Bar('#ShiftGoal',  { labels: [],  series: [] }, optionsBar);
+		ChartShiftGoal.on('draw', function(context) {
+			// First we want to make sure that only do something when the draw event is for bars. Draw events do get fired for labels and grids too.
+			if(context.type === 'bar') {
+				// With the Chartist.Svg API we can easily set an attribute on our bar that just got drawn
+				context.element.attr({
+				// Now we set the style attribute on our bar to override the default color of the bar. By using a HSL colour we can easily set the hue of the colour dynamically while keeping the same saturation and lightness. From the context we can also get the current value of the bar. We use that value to calculate a hue between 0 and 100 degree. This will make our bars appear green when close to the maximum and red when close to zero.
+				style: 'stroke: hsl(' + Math.floor(Chartist.getMultiValue(context.value) / 72 * 100) + ', 50%, 50%);'
+				});
+			}
+		});
+
+		//initial data get 
+		GetGoalData();
+
+		//Get data using API
+		window.setTimeout(GetGoalData, 600000); // How often to get data 
+
+		function GetGoalData() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListenerG);
+			req1.open("GET", '../../api/TestResultsJDSVC_Goal/{{{ParmLocation}}}/{{{ParmLine}}}');
+			req1.send();
+
+			function reqListenerG () {
+				const result = JSON.parse(this.responseText);
+				//const chartdata = result; // { labels: labels,  series: series };
+				ChartShiftGoal.update(result);
+			}
+		}
+		//initial data get 
+		GetWeekShiftTotalsPassed();
+		//Get week total data using API
+		window.setTimeout(GetWeekShiftTotalsPassed, 600000); // How often to get data 
+
+		function GetWeekShiftTotalsPassed() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListenerWST);
+			req1.open("GET", '../../api/TestResultsJDSVC/{{{ParmLocation}}}/{{{ParmLine}}}/WeekByShift');
+			req1.send();
+
+			function reqListenerWST () {
+				const result = JSON.parse(this.responseText);
+				{{!-- Comes back like label and series arrays in result object... 
+				need to check label before using as shift may not have run and data is missing
+				1Failed	114
+				1Passed	329
+				2Failed	79
+				2Passed	249
+				--}}
+				var WeekTotal = 0;
+				for (let i = 0; i < result.labels.length; i++) {
+					if (result.labels[i] == '1Passed') { 
+						document.getElementById('ShiftTotals').innerHTML += `Shift 1:<b> ${result.series[i]}</b>`;
+						WeekTotal += result.series[i];
+					}
+					if (result.labels[i] == '2Passed') { 
+						document.getElementById('ShiftTotals').innerHTML += `&nbsp&nbsp   Shift 2:<b>${result.series[i]}</b>`;
+						WeekTotal += result.series[i];
+					}
+				}
+				document.getElementById('WeekTotal').innerHTML = WeekTotal;
+			}
+		}
+
+	}
+	// ============================= Populate Job Schedule Grid ==================================
+	{
+		//initial data get 
+		GetJobsData();
+
+		//Get data using API
+		window.setInterval(GetJobsData, 30000); // How often to get data 
+
+		function GetJobsData() { 
+			const reqJ = new XMLHttpRequest()
+			reqJ.addEventListener("load", reqListenerJobs);
+			reqJ.open("GET", '../../api/ProductionScheduleJDSVC/{{{ParmLocation}}}/{{{ParmLine}}}');
+			reqJ.send();
+			
+			function reqListenerJobs () {
+				const result = JSON.parse(this.responseText);
+				//console.log("api job result:" + JSON.stringify(result));
+				const labels = [];
+				let series = [];
+				result.forEach(function(row){
+					series.push([Object.values(Object.values(row))[0],
+								Object.values(Object.values(row))[1],
+								Object.values(Object.values(row))[2],
+								Object.values(Object.values(row))[3],
+								Object.values(Object.values(row))[4]
+								]);
+				});
+				document.getElementById("JobSchedule").innerHTML = '';
+				const grid = new gridjs.Grid({
+					columns: ['Customer Item', 
+					'JDE Item', 'Description', 'Qty', 'Tested', 'Notes'],
+					data: series
+				}).render(document.getElementById("JobSchedule"));
+				//grid.on('rowClick', () => toggleCustomerNames() );
+			}
+		}	
+	}
+	// ============================= Job Schedule Grid toggle names==============================
+	{	
+		function toggleCustomerNames () {
+			//Not used for JD.  This is just a placeholder currently
+			
+			const reqJ = new XMLHttpRequest()
+			reqJ.addEventListener("load", reqListenerJobsFilter);
+			reqJ.open("POST", '../../api/ProductionScheduleFilter/{{{ParmLocation}}}/{{{ParmLine}}}');
+			reqJ.send();
+			
+			function reqListenerJobsFilter () {
+				console.log("api result:" + this.responseText);
+				refresh();
+			}
+		}
+	}
+	// ================================ Populate Top 3 Fails chart==================================== 
+	{
+		//define chart
+		var ChartTopFailures = new Chartist.Bar('#TopFailures',  { labels: [],  series: [] }, optionsBar);
+		//initial data get 
+		GetHistoryData();
+
+		//Get data using API
+		window.setTimeout(GetHistoryData, 600000); // How often to get data 
+
+		function GetHistoryData() { 
+			const req1 = new XMLHttpRequest();
+			req1.addEventListener("load", reqListenerH);
+			req1.open("GET", '../../api/TestResultsJDSVC_Failures/{{{ParmLocation}}}/{{{ParmLine}}}/1');
+			req1.send();
+
+			function reqListenerH () {
+				const result = JSON.parse(this.responseText);
+				ChartTopFailures.update(result);
+
+			}
+		}
+	}
+	// =================================Other script stuff
+	{
+		    window.setInterval('refresh()', 301000); 	// Refresh Everything every 5+ minutes
+
+        // Refresh or reload page.
+        function refresh() {
+			// Reload everything on page
+            window.location.reload();
+        }
+
+	{{!-- $(document).keypress(function (e) {
+            var url = new URL(location.href);
+            //alert(e.which + ' pressed for currently ' + locatn + ' ' + line);
+
+            if (e.which == 114) { // H pressed to HIDE CUSTOMER NAMES
+                		toggleCustomerNames(); 
+
+            }
+            if (e.which == 97) { // A pressed to go to admin options
+                url.href = 'http://s5003013:81/LPFOptions.aspx';
+            }
+            if (e.which > 47 && e.which < 59) {  // number pressed so switch line
+                if (locatn == 'BHGR') {
+                    url.searchParams.set('line', e.which - 48); // 0-9
+                    sessionStorage.setItem('line', e.which - 48); 
+                }
+                if (locatn == 'BHLO') {
+                    url.searchParams.set('line', e.which - 28); // 20-29
+                    sessionStorage.setItem('line', e.which - 28); 
+                }
+                if (locatn == 'BHEL') {
+                    url.searchParams.set('line', e.which - 18); //30-39
+                    sessionStorage.setItem('line', e.which - 18);
+                } 
+            }
+            // Letter E, G, or L pressed so set location
+            if (e.which == 101) {
+                url.searchParams.set('locatn', 'BHEL');
+                sessionStorage.setItem('location', 'BHEL');
+            }
+            if (e.which == 103) {
+                url.searchParams.set('locatn', 'BHGR');
+                sessionStorage.setItem('location', 'BHGR');
+            }
+            if (e.which == 108) {
+                url.searchParams.set('locatn', 'BHLO');
+                sessionStorage.setItem('location', 'BHLO');
+            }
+            if (e.which == 104) { // H pressed to go to HELP
+                url.href = 'http://s5003013:81/LPFHelp.aspx';
+            }
+            if (url.toString()  > " ") {
+                window.location.href = url.toString();
+            }
+        }); --}}
+
+     
+	{{!-- window.onload = function () {
+
+		const queryString = window.location.search;
+		const urlParams = new URLSearchParams(queryString);
+		var locatn = urlParams.get('locatn')
+		var line = urlParams.get('line')
+		try {
+			locatn = sessionStorage.getItem('location');
+			line = sessionStorage.getItem('line');
+		}
+		catch (err) {
+			//alert('Error: ' + err.message);
+		}
+		if (!locatn) {
+			locatn = "BHGR"
+		}
+		if (!line) {
+			line = 1
+		} 
+	}--}}
+	}
+            
+            //document.getElementById('PassFailHoulyTitle').innerHTML = locatn + " Line " + line + " Pass/Fail Over 24 Hours";
+</script>
+

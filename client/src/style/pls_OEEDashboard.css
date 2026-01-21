@@ -1,0 +1,174 @@
+/* Required to properly size the boxes to scale on the entire screen */
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-size: 1.2vw; 
+  box-sizing: border-box;
+}
+
+/* Chartist color overwrite (default colors are trash) */
+.ct-chart-donut {
+  width: 99%;
+  height: 99%;
+  transform-origin: middle;
+}
+
+/* Colors for production and availability, respectively used on the donut graphs */
+.ct-series-a .ct-slice-donut {
+  stroke: #ca1313;
+}
+.ct-series-b .ct-slice-donut {
+  stroke: #ca131333;
+}
+.ct-series-c .ct-slice-donut {
+  stroke: #1010cc33;
+}
+.ct-series-d .ct-slice-donut {
+  stroke: #1010cc;
+}
+
+/* Color Text for production and availability values */
+.series1 {
+  color: #ca1313;
+}
+.series2 {
+  color: #1010cc;
+}
+
+.dashboard {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.75%;
+  box-sizing: border-box;
+  overflow: hidden;
+  font-size: 100%;
+  background-color: #f5f7fa;
+}
+
+.dashboardHeader {
+  font-family: 'Calibri', sans-serif;
+  font-size: clamp(1rem, 1.75vw, 1.75rem);
+  font-weight: bold;
+  text-align: center;
+  color: #000000;
+}
+
+.dashboardChart {
+  display: flex;
+  flex: 1vw;
+  flex-direction: column;
+  border: medium solid #000000;
+  border-radius: 0.9rem;
+  background: linear-gradient(#FFFFFF, #c3ddee);
+  overflow: hidden;
+}
+
+/* Bottom dashboard row split into two boxes */
+.dashboardBottom {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  justify-content: space-evenly;
+  gap: 1%;
+  flex: 0.7;
+}
+
+/* Titles for long-term data or sections */
+.sectionTitle {
+  font-size: clamp(1rem, 1.75vw, 2rem);
+  font-family: 'Calibri', sans-serif;
+  font-weight: bold;
+  text-align: center;
+  padding: 1vw;
+}
+
+/* Main chart area – can add extra style here if needed */
+.mainChart {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* For each donut graph, they will get a production and availiability value displayed below it.*/
+.performance {
+  color: #ca1313;
+  font-size: clamp(0.75rem, 1vw, 1rem);
+  margin-bottom: 0.1rem;
+  text-align: center;
+}
+.availability {
+  color: #1010cc;
+  font-size: clamp(0.75rem, 1vw, 1rem); 
+  margin-bottom: 0.1rem;
+  text-align: center;
+}
+
+/* Centered display of OEE average values */
+.averageValues {
+  height: 100%;
+  flex: 1.2;
+  display: flex;
+  justify-content: center;
+}
+
+.averageValueText {
+  display: flex;
+  align-items: center;
+  font-family: Calibri;
+  font-size: clamp(1rem, 2.25vw, 3rem);
+  font-weight: bold;
+  text-align: center;
+  color: #ca1313;
+  width: 100vw;
+  justify-content: center;
+}
+
+/* Wrapping container for long term data section */
+.longTermDataWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 99%;
+}
+
+/* Layout for multiple long-term donut graphs */
+.longTermGraphs {
+  display: flex;
+  justify-content: space-between;    
+  align-content: space-between;         
+  box-sizing: border-box;
+  gap: 1rem;
+}
+
+/* Outer layout for donut charts */
+.donutGraphOutline {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+/* Each individual donut chart box */
+.donutGraphLayout {
+  width: clamp(10rem, 15vw, 20rem);
+  height: clamp(10rem, 14vw, 20rem); 
+  padding: 1vh;
+  box-sizing: border-box;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.donutGraphLayout h3 {
+  font-size: clamp(1rem, 1vw, 1rem); 
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+}

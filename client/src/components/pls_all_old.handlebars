@@ -1,0 +1,167 @@
+
+<script src="/chartist/chartist.js"></script>
+<script src="/scripts/gridjs.umd.js"></script>
+{{!-- <script src="../public/Javascript/chartist-plugin-legend"></script> --}}
+
+<div  class="dashboard" style="width: 99%; ;display: inline-block;">
+	
+	{{!-- All lines test result guages for location --}}
+	<div id="DonutCharts"></div>
+	{{!-- All lines test result graphs for location --}}
+	<div id="TrendCharts"></div>
+</div>
+<script>
+
+
+	var optionsDonut = {
+		width: '300px',
+	 	height: '300px',
+		donut: true,
+		donutWidth: 70,
+		chartPadding: 0,
+		donutSolid: true,
+		showLabel: false
+	};
+
+	const rotateMatrix90 = (source,direction) => {
+		// get the dimensions of the source matrix
+		const M = source.length;
+		const N = source[0].length;
+
+		// create a new NxM destination array
+		let destination = new Array(N);
+		for (let i = 0; i < N; i++) {
+			destination[i] = new Array(M);
+		}
+
+		// start copying from source into destination
+		for (let i = 0; i < N; i++) {
+			for (let j = 0; j < M; j++) {
+				if (direction == 'right') {
+					//right turn (clockwise) 
+					destination[i][j] = source[M - j - 1][i];
+				} else {
+					//left turn (counter clockwise)
+					destination[i][j] = source[j][N - i - 1];
+				}
+			}
+		}
+		// return the rotated matrix
+		return destination;
+	};
+
+	const ParmLocation = '{{{ParmLocation}}}';
+    const ParmLine = '{{{ParmLine}}}';
+	// Get lines for location
+	let Lines = [];
+	let Tests = [];
+	if (Lines.length == 0) {
+		//console.log('Getting Lines...');
+		GetLinesData();
+	} else {
+		//console.log('Lines already exist...');
+	} 
+	function GetLinesData() { 
+		const req1 = new XMLHttpRequest();
+		req1.addEventListener("load", reqListenerLines);
+		req1.open("GET", '../../api/Lines/{{{ParmLocation}}}');
+		req1.send();
+	
+
+		function reqListenerLines () {
+			const result = JSON.parse(this.responseText);
+
+			Lines = Object.values(result)[0];
+			Tests = Object.values(result)[1];
+			AddCharts(Lines, Tests);
+			//Return LocationLines;
+		}
+	}
+
+	function AddCharts(Lines, Tests) {
+			console.log('Lines: ' + Lines + ' Tests:' + Tests);
+			//Loop over all lines for location by using database 
+			const chartdata = { labels: ['Boom', 'Bada', 'Bim'],  series: [[1,2,3],[2,4,8],[3,9,27]] };
+			Lines.forEach(CreateTrendChart);
+	}
+ 
+	//======================= Populate Trend Charts ===========================
+	function CreateTrendChart(Line) {
+		console.log(`Working on ${Line}`);
+		//Add a chart area to UI
+		document.getElementById('TrendCharts').innerHTML += ` 
+		<div class="dashboardChart" style="width: 99%; display: inline-block; background-color: rgb(255, 255, 255);">
+			<div id="ChartTrend${Line}" class="ct-chart" style="width: 99%; height: 90%; ">${Line}</div>
+			<div align='center'>  
+				<div class="passed">&nbsp;PASSED&nbsp;</div>
+				<div class="target">&nbsp;TARGET&nbsp;</div>
+				<div class="failed">&nbsp;FAILED&nbsp;</div>
+			</div>
+			<div align='center' class="ChartTitle">Location:{{ ParmLocation }} 
+				 Line:${Line} Production Line Status</div>
+		</div>`
+		// chart options
+		var optionsLine = {
+			showArea: true,
+			axisY: {
+				onlyInteger: true
+			},
+			fullWidth: true
+		};
+
+		// =======================Create a blank chart (or one with temp data)
+		// below only updates the last line. ??????
+		var chartdata = { labels: ['Boom', 'Bada', 'Bim'],  series: [[`${Line}`,2,3],[2,4,8],[3,9,27]] }
+		//eval("const ChartTrendVar" + Line + " = new Chartist.Line('#ChartTrend" + Line + "',chartdata,optionsLine); ");
+		window[`ChartTrendVar${Line}`] = new Chartist.Line(`#ChartTrend${Line}`,chartdata,optionsLine);
+		console.log(document.getElementById(`ChartTrend${Line}`).children );
+		//window[`ChartTrend${Line}`].update(chartdata);
+
+		//===============================================data get 
+	
+		{{!-- console.log('Get data for line ' + Line );
+		let req = [];
+		req[Line] = new XMLHttpRequest();
+		//let functionString = 'reqListenerTrend' + Line ;
+		let functionString = 'reqListenerTrend';
+		req[Line].addEventListener("load", eval("reqListenerTrend(" + Line + ")") );
+		req[Line].open("GET", '../../api/24HourTrend/{{{ParmLocation}}}/' + Line);
+		req[Line].send();
+		
+		//eval("new function(reqListenerTrend" + Line + ")"); {
+		function reqListenerTrend(Line) {
+			console.log('populating ' + Line );
+			console.log('Response:' + this.responseText);
+			const result = JSON.parse(this.responseText);
+			//console.log("api result:" + result);
+			const labels = [];
+			let series = [];
+			result.forEach(function(row){
+				labels.push(Object.values(Object.values(row))[0]);
+				series.push([Object.values(Object.values(row))[1],
+							Object.values(Object.values(row))[2],
+							Object.values(Object.values(row))[3]]);
+			});
+			//rotate the series 90 degrees counter clockways
+			series = rotateMatrix90(series,'left');
+			const chartdata = { labels: labels,  series: series };
+			//console.log(`C2 JSON:  ` + JSON.stringify(chartdata))
+			//var chart24 = new Chartist.Line('#TargetRate', chartdata, optionsLine); 
+			console.log('Updating' + Line);
+			//window['ChartTrend' + Line].update(chartdata);
+			eval("ChartTrend" + Line + ".update(chartdata);");
+			
+		} --}}
+	}
+	// =================================Other script stuff
+	{
+		window.setInterval('refresh()', 300000); 	// Refresh Everything every 5+ minutes
+
+        // Refresh or reload page.
+        function refresh() {
+			// Reload everything on page
+            window.location.reload();
+        }
+	}
+</script>
+
